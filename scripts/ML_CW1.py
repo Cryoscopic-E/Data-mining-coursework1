@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import cv2
 import csv
 from sklearn.naive_bayes import GaussianNB
 from matplotlib import pyplot as plt
@@ -20,26 +19,26 @@ Note: Replace filepath with your own one to the data
 
 """
 
-df_pixels = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/x_train_gr_smpl.csv')
-df_all_classes = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl.csv')
-df_is_class0 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_0.csv')
-df_is_class1 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_1.csv')
-df_is_class2 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_2.csv')
-df_is_class3 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_3.csv')
-df_is_class4 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_4.csv')
-df_is_class5 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_5.csv')
-df_is_class6 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_6.csv')
-df_is_class7 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_7.csv')
-df_is_class8 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_8.csv')
-df_is_class9 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_9.csv')
+df_pixels = pd.read_csv('.data/x_train_gr_smpl.csv')
+df_all_classes = pd.read_csv('.data/y_train_smpl.csv')
+df_is_class0 = pd.read_csv('.data/y_train_smpl_0.csv')
+# df_is_class1 = pd.read_csv('.data/y_train_smpl_1.csv')
+# df_is_class2 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_2.csv')
+# df_is_class3 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_3.csv')
+# df_is_class4 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_4.csv')
+# df_is_class5 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_5.csv')
+# df_is_class6 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_6.csv')
+# df_is_class7 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_7.csv')
+# df_is_class8 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_8.csv')
+# df_is_class9 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_9.csv')
+#
+#
+# combined_data = np.column_stack((df_is_class0, df_is_class1, df_is_class2, df_is_class3,
+#                                  df_is_class4, df_is_class5, df_is_class6, df_is_class7,
+#                                  df_is_class8, df_is_class9, df_all_classes, df_pixels))
 
-
-combined_data = np.column_stack((df_is_class0, df_is_class1, df_is_class2, df_is_class3,
-                                 df_is_class4, df_is_class5, df_is_class6, df_is_class7,
-                                 df_is_class8, df_is_class9, df_all_classes, df_pixels))
-
-
-np.random.shuffle(combined_data)
+#
+# np.random.shuffle(combined_data)
 
 # class Row:
 #     def __init__(self, array):
@@ -66,12 +65,12 @@ np.random.shuffle(combined_data)
 #
 # rows = load('random_rows_0.csv')
 # print(rows[0].target)
-
-class0, class1, class2, class3, class4, class5, class6, class7, class8, class9, all_class, pixels = \
-    np.hsplit(combined_data, range(1,12) )
-
-
-all_class.transpose()
+#
+# class0, class1, class2, class3, class4, class5, class6, class7, class8, class9, all_class, pixels = \
+#     np.hsplit(combined_data, range(1,12) )
+#
+#
+# all_class.transpose()
 
 # print(pixels.shape)
 
@@ -116,23 +115,23 @@ to test the model.
 
 """
 
-# print(df_pixels.iloc[0])
+print(df_pixels.iloc[0])
+
+print('correlating ... ')
+cor = df_pixels[0:100].corr()
+#print(cor.to_numpy()[:9,:9])
+
+cor_target = abs(cor)
+
+relevate_features= cor_target[cor_target<1]
+print(relevate_features.sort_values(ascending=True)[2294:])
+
+
+# from sklearn.feature_selection import SelectKBest
+# from sklearn.feature_selection import chi2
 #
-# print('correlating ... ')
-# cor = df_pixels[:100].corr()
-# #print(cor.to_numpy()[:9,:9])
 #
-# cor_target = abs(cor)
+# transformer = SelectKBest(score_func=chi2, k=10)
 #
-# relevate_features= cor_target[cor_target<1]
-# print(relevate_features.sort_values(ascending=True)[2294:])
-
-
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2
-
-
-transformer = SelectKBest(score_func=chi2, k=10)
-
-new_data = transformer.fit_transform(df_pixels.values, df_is_class0)
-print(transformer.scores_)
+# new_data = transformer.fit_transform(df_pixels.values, df_is_class0)
+# print(transformer.scores_)
