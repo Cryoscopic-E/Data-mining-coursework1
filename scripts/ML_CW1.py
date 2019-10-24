@@ -19,9 +19,9 @@ Note: Replace filepath with your own one to the data
 
 """
 
-df_pixels = pd.read_csv('.data/x_train_gr_smpl.csv')
-df_all_classes = pd.read_csv('.data/y_train_smpl.csv')
-df_is_class0 = pd.read_csv('.data/y_train_smpl_0.csv')
+df_pixels = pd.read_csv('../data/x_train_gr_smpl.csv')
+df_all_classes = pd.read_csv('../data/y_train_smpl.csv')
+df_is_class0 = pd.read_csv('../data/y_train_smpl_0.csv')
 # df_is_class1 = pd.read_csv('.data/y_train_smpl_1.csv')
 # df_is_class2 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_2.csv')
 # df_is_class3 = pd.read_csv('/home/msc/odm1/Documents/ML_CW1/y_train_smpl_3.csv')
@@ -115,23 +115,32 @@ to test the model.
 
 """
 
-print(df_pixels.iloc[0])
+# =============================================================================
+# print(df_pixels.iloc[0])
+# 
+# print('correlating ... ')
+# cor = df_pixels[0:100].corr()
+# #print(cor.to_numpy()[:9,:9])
+# 
+# cor_target = abs(cor)
+# 
+# relevate_features= cor_target[cor_target<1]
+# print(relevate_features.sort_values(ascending=True)[2294:])
+# =============================================================================
 
-print('correlating ... ')
-cor = df_pixels[0:100].corr()
-#print(cor.to_numpy()[:9,:9])
 
-cor_target = abs(cor)
-
-relevate_features= cor_target[cor_target<1]
-print(relevate_features.sort_values(ascending=True)[2294:])
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 
 
-# from sklearn.feature_selection import SelectKBest
-# from sklearn.feature_selection import chi2
-#
-#
-# transformer = SelectKBest(score_func=chi2, k=10)
-#
-# new_data = transformer.fit_transform(df_pixels.values, df_is_class0)
-# print(transformer.scores_)
+transformer = SelectKBest(score_func=chi2, k=10)
+
+#new_data = transformer.fit_transform(df_pixels.values, df_is_class0)
+fit = transformer.fit(df_pixels, df_is_class0)
+scores = pd.DataFrame(fit.scores_)
+columns = pd.DataFrame(df_pixels.columns)
+#concat 2 dataframes for better visualization
+featuresScore = pd.concat([columns,scores],axis=1)
+featuresScore.columns = ['Pixel','Score']
+
+print(featuresScore.nlargest(10,'Score'))
