@@ -6,7 +6,7 @@ train_sample = pd.read_csv(filepath_or_buffer='../data/x_train_gr_smpl.csv', sep
 left = 9
 right = 37
 
-with open("../output/reduced_x_train_gr_smpl.csv", mode='w') as csv_file:
+with open("../output/reduced_x_train_gr_smpl.csv", mode='w', newline='') as csv_file:
     csv_writer = csv.writer(csv_file)
     csv_writer.writerow(range(0,28**2))
     for flat_image in train_sample.values:

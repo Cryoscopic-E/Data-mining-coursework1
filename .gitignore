@@ -1,4 +1,4 @@
 data/
-*.pdf
-.idea/
+docs/
+.spyproject/
 output/
