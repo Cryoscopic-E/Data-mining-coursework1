@@ -5,17 +5,17 @@ from sklearn.feature_selection import chi2
 
 
 def write_first_n_features(n,array):
-    #with open('../data/'+str(n)+'_feats_train_smpl.csv', 'a',newline='') as csv_file:
-    with open('../data/'+str(n)+'_feats_train_smpl_reduced.csv', 'a',newline='') as csv_file: 
+    with open('../data/'+str(n)+'_feats_train_smpl.csv', 'a',newline='') as csv_file:
+    #with open('../data/'+str(n)+'_feats_train_smpl_reduced.csv', 'a',newline='') as csv_file: 
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(array[:n])
             
 
 #full dataset
-#df_pixels = pd.read_csv('../data/x_train_gr_smpl.csv')
+df_pixels = pd.read_csv('../data/x_train_gr_smpl.csv')
 
 #sliced dataset
-df_pixels = pd.read_csv('../output/reduced_x_train_gr_smpl.csv')
+#df_pixels = pd.read_csv('../output/reduced_x_train_gr_smpl.csv')
 
 pixels_features = []
 for n in range(10):
