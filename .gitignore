@@ -2,3 +2,4 @@ data/
 docs/
 .spyproject/
 output/
+scripts/__pycache__/*

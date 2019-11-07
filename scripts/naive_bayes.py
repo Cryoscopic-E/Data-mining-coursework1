@@ -1,40 +1,47 @@
-import pandas as pd
 import numpy as np
+import seaborn as sn
 from sklearn.naive_bayes import GaussianNB
 from sklearn import metrics
+import matplotlib
+import matplotlib.pyplot as plt
+
+import data_operations
+import constants
 
 
-# complete data
-#df_pixels = pd.read_csv('../data/x_train_gr_smpl.csv')
+def naive_bayes(data, classes, outfile_name, split=70):
+    """
+    The metod create an output file (output/ folder) containing:
+        - classification report
+        - confusion matric
+        - accuracy score
+    """
 
-#reduced data
-#df_pixels = pd.read_csv('../output/reduced_x_train_gr_smpl.csv')
-#df_all_classes = pd.read_csv('../data/y_train_smpl.csv')
+    train_s, train_s_class, test_s, test_s_class = data_operations.split_sets(
+        data, classes, split)
+    gnb = GaussianNB()
+    gnb.fit(train_s, train_s_class.values.ravel())
+    pred = gnb.predict(test_s)
 
-#randomized complete 
-df_pixels = pd.read_csv('../output/shuffled_x_train_gr_smpl.csv')
+    with open(constants.NAIVE_BAYES_REPORT_PATH+outfile_name+".txt", "w") as out_text:
+        out_text.write(metrics.classification_report(test_s_class, pred))
+        out_text.write('\n')
+        cm = metrics.confusion_matrix(test_s_class, pred)
+        out_text.write(np.array2string(cm))
+        out_text.write('\n\nAccuracy score: ' +
+                       str(metrics.accuracy_score(test_s_class, pred)))
+        plt.figure(figsize=(10, 7))
+        sn.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        plt.show()
+    pass
 
-#randomized reduced
-#df_pixels = pd.read_csv('../output/shuffled_reduced_x_train_gr_smpl.csv')
 
-#feature selected
-df_pixels_feats = pd.read_csv('../output/smpl_2_features.csv')
-df_all_classes = pd.read_csv('../output/shuffled_y_train_smpl.csv')
+if __name__ == '__main__':
+    #normalized_full, normalized_sliced = data_operations.load_normalized()
+    classes = data_operations.load_dataframe(constants.ORIGINAL_CLASSES)
+    classes = data_operations.randomize_data(classes, constants.SEED)
 
-upper_limit = int(df_pixels.shape[0] * 0.7)
-
-#train_sample_pixels = df_pixels[:upper_limit]
-test_sample_pixels = df_pixels[upper_limit:]
-
-train_sample_classes = df_all_classes[:upper_limit]
-test_sample_classes = df_all_classes[upper_limit:]
-
-gnb = GaussianNB()
-gnb.fit(df_pixels_feats, df_all_classes.values.ravel())
-pred = gnb.predict(df_pixels)
-
-with open("../output/feature_naive_bayes_complete.txt","w") as out_text:
-    out_text.write(metrics.classification_report(df_all_classes, pred))
-    cm = metrics.confusion_matrix(df_all_classes, pred)
-    out_text.write(np.array2string(cm))
-    out_text.write("\n\nAccuracy score: " + str(metrics.accuracy_score(df_all_classes,pred)))
+    f_5_full = data_operations.load_dataframe(
+        constants.FEATURES_N_SMPL_PATH+'5_NORMALIZED.csv')
+    f_5_full = data_operations.randomize_data(f_5_full, constants.SEED)
+    naive_bayes(f_5_full, classes, 'report_5_features_normalized_full')
