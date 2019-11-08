@@ -40,5 +40,8 @@ if __name__ == '__main__':
     df_n = load_dataframe(constants.NORMALIZED_SMPL)
     df_s = load_dataframe(constants.NORMALIZED_SLICED_SMPL)
 
+    select_features(df_n, "NORMALIZED")
+    select_features(df_s, "SLICED")
+
     create_full_table(df_n, 'NORMALIZED')
     create_full_table(df_s, 'SLICED')

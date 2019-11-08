@@ -1,11 +1,10 @@
 import pandas as pd
 import numpy as np
 import csv
-import cv2 as cv
+import cv2
 from os import path
 import constants
 from progress.bar import Bar
-import cv2 as cv
 from math import sqrt
 
 
@@ -33,7 +32,12 @@ def load_normalized():
         save_dataframe_csv(norm, constants.NORMALIZED_SMPL)
     else:
         norm = load_dataframe(constants.NORMALIZED_SMPL)
-
+    # LOAD NORMALIZED SLICED SAMPLE
+    if not path.exists(constants.NORMALIZED_SLICED_SMPL):
+        print('Normalized sliced samples file not found.')
+        print('Creating Normalized Sliced Dataframe')
+        norm_slc = slice_img(norm)
+        save_dataframe_csv(norm_slc, constants.NORMALIZED_SLICED_SMPL)
     # LOAD NORMALIZED DATA RANDOM OR CREATE IT
     if not path.exists(constants.NORMALIZED_FULL_RND_SMPL):
         print('Normalized random samples file not found.')
@@ -47,7 +51,7 @@ def load_normalized():
     if not path.exists(constants.NORMALIZED_SLICED_RND_SMPL):
         print('Normalized random samples (sliced) file not found.')
         print('Creating Normalized (sliced) Random Dataframe')
-        norm_slc_rnd = slice_img(norm_f_rnd)
+        norm_slc_rnd = randomize_data(norm_slc, constants.SEED)
         save_dataframe_csv(norm_slc_rnd, constants.NORMALIZED_SLICED_RND_SMPL)
     else:
         norm_slc_rnd = load_dataframe(constants.NORMALIZED_SLICED_RND_SMPL)
@@ -113,7 +117,7 @@ def normalize(dataframe):
     normalized = []
     bar = Bar('Normalizing\t', max=len(dataframe.values))
     for pixels in dataframe.values:
-        (minVal, maxVal, minLoc, maxLoc) = cv.minMaxLoc(pixels)
+        (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(pixels)
         new_row = []
         for pixel in pixels:
             pixel = int((pixel - minVal) * (255 / (maxVal - minVal)))
@@ -145,16 +149,19 @@ def save_img(dataframe, indx, type_name):
     """
     size = int(sqrt(dataframe.shape[1]))
     ocv_img = np.reshape(dataframe.values[indx], (size, size))
-    cv.imwrite(constants.IMG_PATH+str(indx)+type_name+".png", ocv_img)
+    cv2.imwrite(constants.IMG_PATH+str(indx)+type_name+".png", ocv_img)
     pass
 
 
 if __name__ == '__main__':
-    n = 5741
-    df_o = load_dataframe(constants.ORIGINAL_X_SMPL)
-    df_o = randomize_data(df_o, constants.SEED)
-    save_img(df_o, n, "ORIGINAL")
-    df_n = load_dataframe(constants.NORMALIZED_FULL_RND_SMPL)
-    save_img(df_n, n, "NORMALIZED")
-    df_s = load_dataframe(constants.NORMALIZED_SLICED_RND_SMPL)
-    save_img(df_s, n, "SLICED")
+    # CREATE FILES
+    load_normalized()
+    # SAVING IMAGES
+    # n = 5741
+    # df_o = load_dataframe(constants.ORIGINAL_X_SMPL)
+    # df_o = randomize_data(df_o, constants.SEED)
+    # save_img(df_o, n, "ORIGINAL")
+    # df_n = load_dataframe(constants.NORMALIZED_FULL_RND_SMPL)
+    # save_img(df_n, n, "NORMALIZED")
+    # df_s = load_dataframe(constants.NORMALIZED_SLICED_RND_SMPL)
+    # save_img(df_s, n, "SLICED")

@@ -28,8 +28,7 @@ def naive_bayes(data, classes, outfile_name, split=70):
         out_text.write('\n')
         cm = metrics.confusion_matrix(test_s_class, pred)
         out_text.write(np.array2string(cm))
-        out_text.write('\n\nAccuracy score: ' +
-                       str(metrics.accuracy_score(test_s_class, pred)))
+        out_text.write('\n\nAccuracy score: ' + str(metrics.accuracy_score(test_s_class, pred)))
         plt.figure(figsize=(10, 7))
         sn.heatmap(cm, annot=True, fmt='d', cmap='Blues')
         plt.show()
@@ -38,10 +37,17 @@ def naive_bayes(data, classes, outfile_name, split=70):
 
 if __name__ == '__main__':
     #normalized_full, normalized_sliced = data_operations.load_normalized()
+
+    # feat_2 = data_operations.load_dataframe(constants.FEATURES_N_SMPL_PATH+'2_NORMALIZED.csv')
+    # feat_2 = data_operations.randomize_data(feat_2,constants.SEED)
+    # feat_5 = data_operations.load_dataframe(constants.FEATURES_N_SMPL_PATH+'5_NORMALIZED.csv')
+    # feat_5 = data_operations.randomize_data(feat_5,constants.SEED)
+    feat_10 = data_operations.load_dataframe(constants.FEATURES_N_SMPL_PATH+'10_NORMALIZED.csv')
+    feat_10 = data_operations.randomize_data(feat_10,constants.SEED)
+
     classes = data_operations.load_dataframe(constants.ORIGINAL_CLASSES)
     classes = data_operations.randomize_data(classes, constants.SEED)
 
-    f_5_full = data_operations.load_dataframe(
-        constants.FEATURES_N_SMPL_PATH+'5_NORMALIZED.csv')
-    f_5_full = data_operations.randomize_data(f_5_full, constants.SEED)
-    naive_bayes(f_5_full, classes, 'report_5_features_normalized_full')
+    # naive_bayes(feat_2,classes,'2_Features')
+    # naive_bayes(feat_5,classes,'5_Features')
+    naive_bayes(feat_10,classes,'10_Features')
