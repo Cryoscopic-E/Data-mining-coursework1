@@ -1,101 +1,108 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import data_operations
+import constants
 
-# data manipulation
-X = pd.read_csv('../datasets/x_train_gr_smpl.csv')
-y = pd.read_csv('../datasets/y_train_smpl.csv')
-from sklearn.utils import shuffle
-X = shuffle(X,random_state=3)
-y = shuffle(y,random_state=3)
+# load and split data
+X = pd.read_csv('../data/x_train_gr_nrm_slc_rnd_smpl.csv')
+y = pd.read_csv('../data/y_train_smpl.csv')
+y = data_operations.randomize_data(y, constants.SEED)
 
-# EDA
-print('X: {}'.format(X.shape))
-print('y: {}'.format(y.shape))
-plt.figure()
-y.hist(bins=10)
-plt.title('Number of instances of each class')
-plt.xlabel('Class')
-plt.ylabel('Instances')
-plt.show()
-
-# training test split, dev set not req at the moment
+# unsupervised, don't really need to split?
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=3)
 
-# normalisation is probably not necessary for kmeans
-X_train = X_train / 255
-X_test = X_test / 255
+# REDUCE DIMENSIONALITY (can use either tSNE or PCA, tSNE takes much longer and need to optimise for perplexity but gives better approximation)
+# from sklearn.manifold import TSNE
+# X_train_tsne = TSNE(n_components=3, perplexity=30).fit_transform(X_train)
+from sklearn.decomposition import PCA
+X_train_pca = PCA(n_components=3).fit_transform(X_train)
 
-# is the size of the data correct?
-print('Training Data: {}'.format(X_train.shape))
-print('Training labels: {}'.format(y_train.shape))
-print('Test Data: {}'.format(X_test.shape))
-print('Test labels: {}'.format(y_test.shape))
 
-# check the meaning of life image
-plt.figure()
-plt.imshow(X_train.values[42].reshape((48,48)))
-plt.show()
-
-# Unsupervised kmeans
+# UNSUPERVISED KMEANS CLUSTERING
 from sklearn.cluster import KMeans
-k = 50 # maybe increase this from 10, although there is 10 classes, signs of one class may look v. different, e.g. at an angle
+# More than 10 may also be okay, I am currently checking metrics to find the optimal number of clusters
+k = 10
 kmeans = KMeans(n_clusters=k,random_state=3)
-# kmeans.fit(X_train)
-# y_labels_train = kmeans.labels_
-# alternative notation
-y_labels_train = kmeans.fit_predict(X_train)
+y_labels_train = kmeans.fit_(X_train_pca)
 
+# label the clusters
+y_labels_train = kmeans.labels_
 
 # get the centroids of the clusters
 centroids = kmeans.cluster_centers_
-images = centroids.reshape(k, 48, 48)
-images *= 255
 
-# what does a centroid image look like
-plt.figure()
-plt.imshow(images[9])
-plt.show()
 
-# make relation between (a) y_labels_train and (b) y_train, i.e. label of 1 in (a) corresponds to label of 4 in (b)
-# check y_labels_test against y_test for the same relation
-def get_corresponding_labels(kmeans, dataset_labels):
-    corrected_labels = {}
+# CLUSTER EVALUATION
 
-    for i in range(kmeans.n_clusters):
-        labels = []
-        index = np.where(kmeans.labels_ == i)
-        labels.append(dataset_labels.values[index])
+# method 1 gets corresponding classes, 2 & 3 provide some checks
+y_train = np.squeeze(y_train)
 
-        if len(labels[0]) == 1:
-            counts = np.bincount(labels[0])
-        else:
-            counts = np.bincount(np.squeeze(labels))
+# method 1 - gets the most common corresponding label from the actual labels
+from scipy.stats import mode
+labels = np.zeros_like(y_labels_train)
+for i in range(k):
+    mask = (y_labels_train == i)
+    labels[mask] = mode(y_train[mask])[0]
 
-        if np.argmax(counts) in corrected_labels:
-            corrected_labels[np.argmax(counts)].append(i)
-        else:
-            corrected_labels[np.argmax(counts)] = [i]
-    return corrected_labels
+# method 2 - returns a map of label to label and frequency (basically a check on method 1)
+label_map = {}
+for i in range(k):
+    label_counter = {'Class 0':0,'Class 1':0,'Class 2':0,'Class 3':0,'Class 4':0,'Class 5':0,'Class 6':0,'Class 7':0,'Class 8':0,'Class 9':0}
+    for idx in range(10128):
+        if y_labels_train[idx] == i:
+            item = y_train.values[idx]
+            if item == 0:
+                label_counter['Class 0'] += 1
+            elif item == 1:
+                label_counter['Class 1'] += 1
+            elif item == 2:
+                label_counter['Class 2'] += 1
+            elif item == 3:
+                label_counter['Class 3'] += 1
+            elif item == 4:
+                label_counter['Class 4'] += 1
+            elif item == 5:
+                label_counter['Class 5'] += 1
+            elif item == 6:
+                label_counter['Class 6'] += 1
+            elif item == 7:
+                label_counter['Class 7'] += 1
+            elif item == 8:
+                label_counter['Class 8'] += 1
+            elif item == 9:
+                label_counter['Class 9'] += 1
+            else:
+                print('ooopsy')
+    label_map[i] = label_counter
 
-label_dictionary = get_corresponding_labels(kmeans, y_train)
 
-# label correspondonce
-label_dictionary
-
-# test the classifier
-y_labels_test = kmeans.predict(X_test)  # Classifying them all in the same cluster
-
-# compare y_labels_test to y_test via the label label_dictionary      NOT WORKING ATM
-
-# correct = 0
-# wrong = 0
+# method 3 - ~ give dictionary but not frequency
+# def get_corresponding_labels(kmeans, dataset_labels):
+#     corrected_labels = {}
 #
-# for i in range(len(y_labels_test)):
-#     if y_labels_test[i] in label_dictionary[y_test.values.item(i)]:
-#         correct += 1
-#     else:
-#         wrong += 1
+#     for i in range(kmeans.n_clusters):
+#         labels = []
+#         index = np.where(kmeans.labels_ == i)
+#         labels.append(dataset_labels.values[index])
 #
-# print('total num = {} , number checked = {}, percent correct = {}%'.format(len(y_labels_test), correct+wrong, correct / len(y_labels_test)))
+#         if len(labels[0]) == 1:
+#             counts = np.bincount(labels[0])
+#         else:
+#             counts = np.bincount(np.squeeze(labels))
+#
+#         if np.argmax(counts) in corrected_labels:
+#             corrected_labels[np.argmax(counts)].append(i)
+#         else:
+#             corrected_labels[np.argmax(counts)] = [i]
+#
+#     return corrected_labels
+#
+# label_dictionary = get_corresponding_labels(kmeans, y_train)
+
+# check labels
+labels
+y_labels_train
+
+label_map
