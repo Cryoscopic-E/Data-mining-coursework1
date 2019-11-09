@@ -19,6 +19,8 @@ def load_dataframe(path_csv):
 def load_normalized():
     """
     Returns all data sets we need:
+        - Normalized_Full
+        - Normalized_Sliced
         - Normalized_Full (rnd)
         - Normalized_Sliced (rnd)
     """
@@ -38,6 +40,8 @@ def load_normalized():
         print('Creating Normalized Sliced Dataframe')
         norm_slc = slice_img(norm)
         save_dataframe_csv(norm_slc, constants.NORMALIZED_SLICED_SMPL)
+    else:
+        norm_slc = load_dataframe(constants.NORMALIZED_SLICED_SMPL)
     # LOAD NORMALIZED DATA RANDOM OR CREATE IT
     if not path.exists(constants.NORMALIZED_FULL_RND_SMPL):
         print('Normalized random samples file not found.')
@@ -56,7 +60,7 @@ def load_normalized():
     else:
         norm_slc_rnd = load_dataframe(constants.NORMALIZED_SLICED_RND_SMPL)
 
-    return (norm_f_rnd, norm_slc_rnd)
+    return (norm, norm_slc, norm_f_rnd, norm_slc_rnd)
 
 
 def split_sets(data_set, class_set, train_set_perc):
@@ -153,15 +157,16 @@ def save_img(dataframe, indx, type_name):
     pass
 
 
-if __name__ == '__main__':
-    # CREATE FILES
-    load_normalized()
-    # SAVING IMAGES
-    # n = 5741
-    # df_o = load_dataframe(constants.ORIGINAL_X_SMPL)
-    # df_o = randomize_data(df_o, constants.SEED)
-    # save_img(df_o, n, "ORIGINAL")
-    # df_n = load_dataframe(constants.NORMALIZED_FULL_RND_SMPL)
-    # save_img(df_n, n, "NORMALIZED")
-    # df_s = load_dataframe(constants.NORMALIZED_SLICED_RND_SMPL)
-    # save_img(df_s, n, "SLICED")
+# =============================================================================
+# if __name__ == '__main__':
+#     # CREATE FILES
+#     # SAVING IMAGES
+#     # n = 5741
+#     # df_o = load_dataframe(constants.ORIGINAL_X_SMPL)
+#     # df_o = randomize_data(df_o, constants.SEED)
+#     # save_img(df_o, n, "ORIGINAL")
+#     # df_n = load_dataframe(constants.NORMALIZED_FULL_RND_SMPL)
+#     # save_img(df_n, n, "NORMALIZED")
+#     # df_s = load_dataframe(constants.NORMALIZED_SLICED_RND_SMPL)
+#     # save_img(df_s, n, "SLICED")
+# =============================================================================
