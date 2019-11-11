@@ -6,7 +6,7 @@ from os import path
 import constants
 from progress.bar import Bar
 from math import sqrt
-
+from random import choice
 
 def load_dataframe(path_csv):
     """
@@ -156,9 +156,39 @@ def save_img(dataframe, indx, type_name):
     cv2.imwrite(constants.IMG_PATH+str(indx)+type_name+".png", ocv_img)
     pass
 
+def save_feat_img():
+    df_classes = load_dataframe(constants.ORIGINAL_CLASSES)
+    ranges = []
+    start_indx = 0
+    last_indx = 0
+    for n in range(10):
+        count = len(np.argwhere(df_classes.values.ravel() == n))
+        last_indx = last_indx + count
+        ranges.append((start_indx, last_indx))
+        start_indx = last_indx + 1
+    with open(constants.N_FEATURES_PATH+'10_NORMALIZED.csv') as csv_file:
+            df_norm_f = load_dataframe(constants.NORMALIZED_SMPL)
+            size = int(sqrt(df_norm_f.shape[1]))
+            csv_reader = csv.reader(csv_file)
+            indx = 0
+            for row in csv_reader:
+                pixels = map(int,row)
+                rand_img = df_norm_f.values[choice(range(ranges[indx][0],ranges[indx][1]))]
+                new_im = np.zeros((size,size,3), np.uint8)
+                for pixel in pixels:
+                    coord = np.unravel_index(pixel,(size,size))
+                    rand_img = rand_img.reshape((size,size))
+                    new_im[coord[0],coord[1]] = [255,0,0]
+                rand_img = np.asarray(rand_img, dtype=np.uint8)
+                rand_img = cv2.cvtColor(rand_img,cv2.COLOR_GRAY2RGB)
+                conc = cv2.addWeighted(rand_img,0.6, new_im,1.0,0)
+                cv2.imwrite('../output/img/test'+str(indx)+'.png',conc)
+                indx+=1
 
 # =============================================================================
+# 
 # if __name__ == '__main__':
+#     save_feat_img()
 #     # CREATE FILES
 #     # SAVING IMAGES
 #     # n = 5741

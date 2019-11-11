@@ -33,15 +33,39 @@ def naive_bayes(data, classes, outfile_name, split=70):
         plt.show()
     pass
 
+def naive_bayes_custom_test(train_s, test_s, train_s_class, test_s_class, outfile_name):
+    """
+    The metod create an output file (output/ folder) containing:
+        - classification report
+        - confusion matric
+        - accuracy score
+    """
+
+    gnb = GaussianNB()
+    gnb.fit(train_s, train_s_class.values.ravel())
+    pred = gnb.predict(test_s)
+
+    with open(constants.NAIVE_BAYES_REPORT_PATH+outfile_name+".txt", "w") as out_text:
+        out_text.write(metrics.classification_report(test_s_class, pred))
+        out_text.write('\n')
+        cm = metrics.confusion_matrix(test_s_class, pred)
+        out_text.write(np.array2string(cm))
+        out_text.write('\n\nAccuracy score: ' + str(metrics.accuracy_score(test_s_class, pred)))
+        plt.figure(figsize=(10, 7))
+        sn.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        plt.show()
+    pass
 
 if __name__ == '__main__':
     normalized_full, normalized_sliced, full_rand, sliced_rand = data_operations.load_normalized()
     
-    select_features(normalized_full, "NORMALIZED")
-    select_features(normalized_sliced, "SLICED")
-
-    create_full_table(normalized_full, 'NORMALIZED')
-    create_full_table(normalized_sliced, 'SLICED')
+# =============================================================================
+#     select_features(normalized_full, "NORMALIZED")
+#     select_features(normalized_sliced, "SLICED")
+# 
+#     create_full_table(normalized_full, 'NORMALIZED')
+#     create_full_table(normalized_sliced, 'SLICED')
+# =============================================================================
 
     
     
@@ -55,8 +79,12 @@ if __name__ == '__main__':
     classes = data_operations.load_dataframe(constants.ORIGINAL_CLASSES)
     classes = data_operations.randomize_data(classes, constants.SEED)
     
-    naive_bayes(full_rand,'normalized_full')
-    naive_bayes(sliced_rand,'normalized_sliced')
-    naive_bayes(feat_2,classes,'2_Features')
-    naive_bayes(feat_5,classes,'5_Features')
-    naive_bayes(feat_10,classes,'10_Features')
+    
+    naive_bayes_custom_test(feat_2,feat_2,classes,classes,'test')
+# =============================================================================
+#     naive_bayes(full_rand,classes,'normalized_full')
+#     naive_bayes(sliced_rand,classes,'normalized_sliced')
+#     naive_bayes(feat_2,classes,'2_Features')
+#     naive_bayes(feat_5,classes,'5_Features')
+#     naive_bayes(feat_10,classes,'10_Features')
+# =============================================================================
